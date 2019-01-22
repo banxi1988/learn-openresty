@@ -7,6 +7,9 @@
       "label": "luajit current file",
       "type": "shell",
       "command": "luajit ${file}",
+      "options": {
+        "cwd": "${workspaceRoot}/learn-lua"
+      },
       "group": {
         "kind": "build",
         "isDefault": true
