@@ -39,3 +39,28 @@ test.test_numbers = function()
   test.equal(math.ceil(score), 99)
   -- LuaJIT 支持长长整型 64位 test.equal(9223372036854775807LL -1,9223372036854775806LL)
 end
+
+test.test_strings = function()
+  test.equal("lua", "lua")
+  test.equal([[I'm yours]], "I'm yours")
+end
+
+test.test_table_basic = function()
+  local corp = {
+    web = "google.com",
+    Web = "banxi1988.com",
+    telephone = "185",
+    staff = {"banxi", "iyan"},
+    1988,
+    1989,
+    [10] = 2018,
+    ["city"] = "Nanning"
+  }
+  test.equal(corp.web, "google.com")
+  test.equal(corp.Web, "banxi1988.com")
+  test.equal(corp["telephone"], "185")
+  test.equal(corp[2], 1989)
+  test.equal(corp[10], 2018)
+  test.equal(corp.city, "Nanning")
+  test.equal(corp.staff[1], "banxi") -- 列表索引从 1 开始
+end
