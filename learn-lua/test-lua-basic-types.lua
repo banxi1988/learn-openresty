@@ -63,4 +63,6 @@ test.test_table_basic = function()
   test.equal(corp[10], 2018)
   test.equal(corp.city, "Nanning")
   test.equal(corp.staff[1], "banxi") -- 列表索引从 1 开始
+  corp.addr = "GX.NN"
+  test.equal(corp.addr, "GX.NN")
 end
