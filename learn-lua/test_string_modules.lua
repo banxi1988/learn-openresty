@@ -31,3 +31,22 @@ test.test_format = function()
   test.equal(string.format("%d", 123.00), "123")
   test.equal(string.format("%.02f", 123.003), "123.00")
 end
+function str_split(s, sep)
+  if sep == nil then
+    sep = "%s" -- 默认以空格等作为分隔
+  end
+  local parts = {}
+  for p in string.gmatch(s, "([^" .. sep .. "]+)") do
+    table.insert(parts, p)
+  end
+  return parts
+end
+
+test.test_match = function()
+  local s1 = "rmaster 127.0.0.1 6382 127.0.0.1 6381"
+  local t1 = {"rmaster", "127.0.0.1", "6382", "127.0.0.1", "6381"}
+  local rt1 = str_split(s1)
+  for i, v in ipairs(t1) do
+    test.equal(t1[i], rt1[i])
+  end
+end
