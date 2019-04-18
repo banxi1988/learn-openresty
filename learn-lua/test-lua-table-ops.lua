@@ -31,17 +31,29 @@ end
 
 test.test_meta_table = function()
   local tbl = {name = "banxi"}
-  tbl.name = "codetalks"
   local metatbl = {
     __index = function(tb, key)
       return "HelloMetatable"
+    end,
+    __newindex = function(tb, key, value)
+      print("__newindex called: tb=", tb, ",key=", key, ",value=", value)
     end
   }
-  print(tbl["name"], tbl.name)
   setmetatable(tbl, metatbl)
+  tbl.name = "codetalks"
+  tbl.sex = "男"
   test.assert(tbl.name == "codetalks")
   test.assert(tbl["name"] == "codetalks")
   test.assert(tbl.age == "HelloMetatable")
+  test.assert(tbl.sex == "HelloMetatable")
+
+  local metatbl2 = {}
+  local tbl2 = {name = "codetalks"}
+  setmetatable(tbl2, {__newindex = metatbl2})
+  test.assert(tbl2.name == "codetalks")
+  tbl2.sex = "男"
+  test.assert(tbl2.sex == nil)
+  test.assert(metatbl2.sex == "男")
 end
 
 Account1 = {balance = 100}
