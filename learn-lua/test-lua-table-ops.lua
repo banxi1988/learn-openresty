@@ -142,6 +142,154 @@ test.test_meta_table_impl_set = function()
   s1mul2 = s1 * s2
   test.assert(Set.tostring(s1mul2) == "{3}")
   print(s1mul2)
+  print({})
+end
+
+Window = {}
+-- 创建原型填充默认值
+Window.prototype = {x = 0, y = 0, width = 100, height = 100}
+Window.mt = {} -- 创建元表
+function Window.new(opt)
+  setmetatable(opt, Window.mt)
+  return opt
+end
+
+Window.mt.__index = function(tbl, key)
+  return Window.prototype[key]
+end
+
+function setDefault(t, d)
+  local mt = {
+    __index = function()
+      return d
+    end
+  }
+  setmetatable(t, mt)
+end
+
+local defaults_mt = {
+  __index = function(t)
+    return t.___
+  end
+}
+
+function setDefaultv2(t, d)
+  t.___ = d
+  setmetatable(t, defaults_mt)
+end
+
+local defaults_key = {} -- empty table as unique key
+local defaults_mt2 = {
+  __index = function(t)
+    return t[defaults_key]
+  end
+}
+
+function setDefaultv3(t, d)
+  t[defaults_key] = d
+  setmetatable(t, defaults_mt2)
+end
+
+test.test_meta_table__index = function()
+  w = Window.new {x = 10, y = 20}
+  print(w.width)
+  print(w.height)
+  test.assert(w.width == 100)
+  test.assert(w.height == 100)
+  test.is_nil(rawget(w, "width"))
+  test.is_nil(rawget(w, "height"))
+
+  tab = {x = 10, y = 20}
+  test.assert(tab.x == 10)
+  test.assert(tab.z == nil)
+  setDefault(tab, 0)
+  test.assert(tab.z == 0)
+
+  tab2 = {x = 10, y = 20}
+  test.assert(tab2.x == 10)
+  test.assert(tab2.z == nil)
+  setDefaultv2(tab2, 0)
+  test.assert(tab2.z == 0)
+
+  tab3 = {x = 10, y = 20}
+  test.assert(tab3.x == 10)
+  test.assert(tab3.z == nil)
+  setDefaultv3(tab3, 0)
+  test.assert(tab3.z == 0)
+end
+
+test.test_meta_table__newindex = function()
+  t = {} -- original table
+  local _t = t -- keep a private access to original table
+  t = {} -- create proxy
+  -- create metaable
+  local mt = {
+    __index = function(t, k)
+      print("*access to element " .. tostring(k))
+      return _t[k] -- access the original table
+    end,
+    __newindex = function(t, k, v)
+      print("*update of element " .. tostring(k) .. " to " .. tostring(v))
+    end
+  }
+  setmetatable(t, mt)
+
+  t[2] = "hello"
+  print(t[2])
+end
+
+test.test_meta_table_track = function()
+  local index = {}
+  local mt = {
+    __index = function(t, k)
+      print("*access t is " .. tostring(t))
+      print("*access to element " .. tostring(k))
+      return t[index][k]
+    end,
+    __newindex = function(t, k, v)
+      print("*update of element " .. tostring(k) .. " to " .. tostring(v))
+      t[index][k] = v
+    end
+  }
+
+  function track(t)
+    local proxy = {}
+    proxy[index] = t
+    print("proxy is " .. tostring(proxy))
+    setmetatable(proxy, mt)
+    return proxy
+  end
+
+  local tbl = {name = "banxi", memo = "codetalks"}
+  local orig_tbl = tbl
+  tbl = track(tbl)
+  test.assert(orig_tbl ~= tbl)
+  tbl.age = 18
+  print(tbl.age)
+  test.is_nil(tbl.sex)
+end
+
+test.test_meta_table_impl_read_only_decor = function()
+  function readOnly(t)
+    local proxy = {}
+    local mt = {
+      __index = t,
+      __newindex = function(t, k, v)
+        error("attempt to update a readOnly table", 2)
+      end
+    }
+    setmetatable(proxy, mt)
+    return proxy
+  end
+
+  weekdays = readOnly {"Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"}
+  test.assert(weekdays[1] == "Sun")
+  test.error_raised(
+    function()
+      weekdays[1] = "Mon"
+    end,
+    "attempt to update a readOnly table"
+  )
 end
 
 Account1 = {balance = 100}
